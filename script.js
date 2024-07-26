@@ -1,28 +1,26 @@
-function showReport() {
-    var username = document.getElementById('username').value;
-    var password = document.getElementById('password').value;
+const express = require('express');
+const bodyParser = require('body-parser');
+const fetch = require('node-fetch');
 
-    // Send the login request to the server
-    fetch('/login', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-        },
-        body: `username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`
-    })
-    .then(response => response.text())
-    .then(data => {
-        if (data === 'Login successful') {
-            document.querySelector('.iframe-container').style.display = 'block';
-            document.querySelector('.login-form').style.display = 'none';
+const app = express();
+app.use(bodyParser.urlencoded({ extended: true }));
+
+app.post('/login', async (req, res) => {
+    const { username, password } = req.body;
+    try {
+        const response = await fetch('https://raw.githubusercontent.com/EdLetshuma/Website-Power-Bi/master/credentials.json');
+        const credentials = await response.json();
+        const user = credentials.find(user => user.username === username && user.password === password);
+        if (user) {
+            res.send('Login successful');
         } else {
-            alert('Invalid login credentials');
+            res.send('Invalid login credentials');
         }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('An error occurred while logging in');
-    });
+    } catch (error) {
+        res.status(500).send('Error fetching credentials');
+    }
+});
 
-    return false; // Prevent the form from submitting the traditional way
-}
+app.listen(3000, () => {
+    console.log('Server is running on port 3000');
+});
