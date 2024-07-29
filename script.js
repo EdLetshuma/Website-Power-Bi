@@ -12,4 +12,3 @@ function showReport() {
         alert('Invalid login credentials');
     }
     return false;
-}
